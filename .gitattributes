@@ -1,0 +1,4 @@
+# Keep LF everywhere, whatever the local git config says: CRLF breaks setup.sh
+# (bash rejects ) and byte-exact test fixtures.
+* text=auto eol=lf
+*.sh text eol=lf
