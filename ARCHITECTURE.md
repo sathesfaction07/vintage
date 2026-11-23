@@ -1,4 +1,4 @@
-# StatusChecker — Technical Architecture
+# Vintage — Technical Architecture
 
 ## Overview
 
@@ -18,7 +18,7 @@ arithmetic on response headers.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                       CLI (status-checker)                                    │
+│                       CLI (vintage)                                    │
 │                                                                              │
 │  check      every reading with the origin window it describes                 │
 │             EXIT 1 on an unreadable row or a LABEL CONFLICT -- both make a     │
@@ -117,7 +117,7 @@ arithmetic on response headers.
 │    is the defect the module exists to     required: fullwidth needs NFKC,      │
 │    correct.                               sharp-s needs casefold since         │
 │                                           lower() leaves it alone. Same        │
-│  collapse_echoes()  one reading per       conclusion as CaseSearch -- a        │
+│  collapse_echoes()  one reading per       conclusion as Kinship -- a        │
 │    generation, keeping the TIGHTEST       REPEAT, cited as one.                │
 │    window. Unidentified readings are                                          │
 │    never collapsed together.            conflicts()  a label mapping to        │
@@ -237,7 +237,7 @@ by fixing caching.
 ## Data Flow
 
 ```
-1.  status-checker audit
+1.  vintage audit
 2.  load 8 label tables, 451 readings, 17 known change instants
       1 malformed row              -> reported, and it fails `check`
       1 label conflict             -> "under review" is PENDING in 3 tables, RESTRICTED in a

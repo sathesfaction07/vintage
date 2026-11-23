@@ -16,7 +16,7 @@ coverage.xml
 output/
 out/
 
-# Generated at runtime by `status-checker record`.
+# Generated at runtime by `vintage record`.
 data/history.db
 *.db-journal
 

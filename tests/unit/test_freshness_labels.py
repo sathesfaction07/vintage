@@ -220,7 +220,7 @@ class TestGenerationIdentity:
 class TestLabelNormalisation:
     def test_nfkc_and_casefold_are_both_required(self):
         """Neither substitutes for the other, which is why both are applied. The same conclusion
-        CaseSearch reached for merchant names -- a repeat, cited as one."""
+        Kinship reached for merchant names -- a repeat, cited as one."""
         assert normalise("ＡＣＴＩＶＥ") == normalise("active")  # noqa: RUF001 - fullwidth is the point
         assert normalise("STRASSE") == normalise("straße")  # sharp s needs casefold
         assert "straße".lower() == "straße"  # lower() alone does not

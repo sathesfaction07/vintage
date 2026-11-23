@@ -1,8 +1,8 @@
-# StatusChecker
+# Vintage
 
 A listing reads `active` at 04:00, `restricted` at 08:10 and `active` again at 08:40. Did it
 flap? No: the third reading came from a three-hour cache and describes the listing as it was
-before 08:00. StatusChecker reads listing status across marketplaces and attaches to every
+before 08:00. Vintage reads listing status across marketplaces and attaches to every
 reading the window of time it can actually describe, worked out from the response's cache
 headers. Treating readings as windows stops phantom transitions from paging anyone.
 
@@ -108,7 +108,7 @@ Both ends of a state span are intervals, so the duration is one too. "Restricted
 "restricted for 0 to 12 hours", which is less satisfying and is what the evidence supports. The naive
 single number is printed beside it.
 
-LifecycleTracker in this portfolio does `total += span.duration` — exact point subtraction. Right
+Meridian in this portfolio does `total += span.duration` — exact point subtraction. Right
 there, where events arrive from a feed with authoritative timestamps. Wrong here, where every
 timestamp is an observation.
 
@@ -157,15 +157,15 @@ age_max       REAL,             -- NULL means unbounded, not zero
 bash setup.sh                  # derives the age table, the inversion, the bias and the budget
 source .venv/bin/activate
 
-status-checker doctor
-status-checker check                    # exits 1: a label conflict and a malformed row
-status-checker changes
-status-checker changes --naive          # the same data attributed by request time
-status-checker durations
-status-checker audit
-status-checker record
-status-checker explain es inverted      # the phantom flap, reading by reading
-status-checker explain us echoed        # 216 requests, 12 observations
+vintage doctor
+vintage check                    # exits 1: a label conflict and a malformed row
+vintage changes
+vintage changes --naive          # the same data attributed by request time
+vintage durations
+vintage audit
+vintage record
+vintage explain es inverted      # the phantom flap, reading by reading
+vintage explain us echoed        # 216 requests, 12 observations
 ```
 
 | Command | Purpose | Exit |
@@ -225,7 +225,7 @@ above.
 **No vision-model fallback on unrecognised labels, despite the brief asking.** An unknown label is
 *evidence the platform changed its wording*, which is the thing to fix in the config. Resolving it
 silently answers the immediate question and destroys the signal, after which the mapping rots
-undetected. Also: BatchValidator in this portfolio already has `core/vlm_fallback.py`, so building it
+undetected. Also: Twinlane in this portfolio already has `core/vlm_fallback.py`, so building it
 again would be a duplicate rather than a capability.
 
 **An unknown label is excluded from attribution.** A transition into `UNKNOWN` is a fact about our
@@ -233,10 +233,10 @@ config, and in the output it would be indistinguishable from a real status movem
 would manufacture two phantom changes around every wording change — the corpus's reworded listing
 yields **one** change, not three.
 
-**No FastAPI + htmx UI, despite the brief asking.** ContentGuard already carries FastAPI, and this
+**No FastAPI + htmx UI, despite the brief asking.** Vigil already carries FastAPI, and this
 portfolio has a logged gap for untested UI JavaScript. A text table asserts in CI; a page does not.
 
-**NFKC and casefold are both applied, and this is a repeat.** CaseSearch reached the same conclusion
+**NFKC and casefold are both applied, and this is a repeat.** Kinship reached the same conclusion
 for merchant names. Cited as a repeat rather than presented as a discovery — but kept, because a
 fullwidth form needs NFKC and the German sharp s needs casefold, and each omission loses a different
 label.

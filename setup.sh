@@ -339,15 +339,15 @@ Setup complete.
 
   source .venv/bin/activate
 
-  status-checker doctor
-  status-checker check                    # exits 1: a label conflict and a malformed row
-  status-checker changes
-  status-checker changes --naive          # the same data attributed by request time
-  status-checker durations
-  status-checker audit
-  status-checker record                   # SQLite, with `after` and `at_or_before` columns
-  status-checker explain es inverted      # the phantom flap, reading by reading
-  status-checker explain us echoed        # 216 requests, 12 observations
+  vintage doctor
+  vintage check                    # exits 1: a label conflict and a malformed row
+  vintage changes
+  vintage changes --naive          # the same data attributed by request time
+  vintage durations
+  vintage audit
+  vintage record                   # SQLite, with `after` and `at_or_before` columns
+  vintage explain es inverted      # the phantom flap, reading by reading
+  vintage explain us echoed        # 216 requests, 12 observations
 
 `check` fails on an unreadable row or a conflicting label, because both make a reported status
 arbitrary. It does NOT fail on staleness or on an unmapped label: a cache serving old content is

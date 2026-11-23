@@ -20,7 +20,7 @@ def normalise(label: str) -> str:
     """Fold a raw label to a comparison key.
 
     NFKC and casefold are both required and neither substitutes for the other. This is the same
-    reasoning CaseSearch arrived at for merchant names -- it is a repeat, not a discovery -- and it
+    reasoning Kinship arrived at for merchant names -- it is a repeat, not a discovery -- and it
     is repeated because the failure is real: a fullwidth form needs NFKC, and the German sharp s
     needs casefold, since `lower()` leaves it alone.
 

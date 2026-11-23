@@ -76,7 +76,7 @@ place an unfalsifiable claim beside a demonstrable one.
 
 Localised labels resolve through a per-marketplace table, normalised with NFKC **and** casefold.
 Both are required and neither substitutes for the other: a fullwidth form needs NFKC, the German
-sharp s needs casefold since `lower()` leaves it alone. This is the same conclusion CaseSearch
+sharp s needs casefold since `lower()` leaves it alone. This is the same conclusion Kinship
 reached for merchant names — **a repeat, cited as one**, repeated because the failure is real.
 
 The static check that matters is `conflicts()`: a label mapping to *different* canonical statuses in

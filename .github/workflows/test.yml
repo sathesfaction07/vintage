@@ -29,7 +29,7 @@ jobs:
         run: pytest -q --cov=status_checker --cov-report=term-missing
 
       - name: Doctor runs with no credentials and no network
-        run: status-checker doctor
+        run: vintage doctor
 
       - name: A missing Age header is UNDATED, not fresh
         run: |
@@ -186,7 +186,7 @@ jobs:
 
       - name: The shipped corpus produces the documented figures
         run: |
-          status-checker audit -o /tmp/out || true
+          vintage audit -o /tmp/out || true
           python - <<'PY'
           import json
           payload = json.load(open("/tmp/out/audit.json"))
@@ -220,44 +220,44 @@ jobs:
 
       - name: check gates on a label conflict but reports staleness as a finding
         run: |
-          ! status-checker check
-          status-checker check | grep -q '1 label conflict(s)'
-          status-checker check | grep -q 'under review'
-          status-checker check | grep -q 'PROVABLY staler'
-          status-checker check | grep -q 'provably stale and not provably fresh either'
-          status-checker check | grep -q 'would let the mapping rot undetected'
-          status-checker check | grep -q 'makes a reported status arbitrary'
+          ! vintage check
+          vintage check | grep -q '1 label conflict(s)'
+          vintage check | grep -q 'under review'
+          vintage check | grep -q 'PROVABLY staler'
+          vintage check | grep -q 'provably stale and not provably fresh either'
+          vintage check | grep -q 'would let the mapping rot undetected'
+          vintage check | grep -q 'makes a reported status arbitrary'
           echo "gated on the conflict, reported the staleness and the drift"
 
       - name: audit passes even though the naive baseline is bad
         run: |
-          status-checker audit
-          status-checker audit | grep -q 'invented 2 transition(s) that never happened'
-          status-checker audit | grep -q 'it IS the finding'
-          status-checker audit | grep -q 'exact equality'
+          vintage audit
+          vintage audit | grep -q 'invented 2 transition(s) that never happened'
+          vintage audit | grep -q 'it IS the finding'
+          vintage audit | grep -q 'exact equality'
           echo "the gate is not unconditional"
 
       - name: changes reports the single inversion
         run: |
-          status-checker changes | grep -q '1 request pair(s) INVERTED'
-          status-checker changes | grep -q 'es/inverted'
-          status-checker changes | grep -q 'infrastructure fact'
+          vintage changes | grep -q '1 request pair(s) INVERTED'
+          vintage changes | grep -q 'es/inverted'
+          vintage changes | grep -q 'infrastructure fact'
           echo "one inversion, correctly scoped"
 
       - name: the SQLite schema carries bounds rather than an instant
         run: |
-          status-checker record | grep -q 'age_max NULL -- unbounded, not zero'
-          status-checker record | grep -q 'after NULL -- detectable, not locatable'
-          status-checker record | grep -q 'not `changed_at`'
+          vintage record | grep -q 'age_max NULL -- unbounded, not zero'
+          vintage record | grep -q 'after NULL -- detectable, not locatable'
+          vintage record | grep -q 'not `changed_at`'
           echo "schema verified"
 
       - name: explain shows windows, echoes and excluded unknown labels
         run: |
-          status-checker explain es inverted | grep -q 'describes \['
-          status-checker explain us echoed | grep -q '216 request(s) -> 12 distinct origin generation(s)'
-          status-checker explain de reworded | grep -q 'manufacture two phantom status changes'
-          status-checker explain de undated | grep -q -- '-inf'
-          ! status-checker explain zz nothing
+          vintage explain es inverted | grep -q 'describes \['
+          vintage explain us echoed | grep -q '216 request(s) -> 12 distinct origin generation(s)'
+          vintage explain de reworded | grep -q 'manufacture two phantom status changes'
+          vintage explain de undated | grep -q -- '-inf'
+          ! vintage explain zz nothing
           echo "explain works"
 
   test-windows:
