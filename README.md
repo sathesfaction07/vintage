@@ -1,10 +1,12 @@
 # StatusChecker
 
-Reads listing status across marketplaces and reports **how old each reading actually is** — because
-a status served from a cache is a true statement about the past, and nothing in the value says so.
+A listing reads `active` at 04:00, `restricted` at 08:10 and `active` again at 08:40. Did it
+flap? No: the third reading came from a three-hour cache and describes the listing as it was
+before 08:00. StatusChecker reads listing status across marketplaces and attaches to every
+reading the window of time it can actually describe, worked out from the response's cache
+headers. Treating readings as windows stops phantom transitions from paging anyone.
 
-No model. The accuracy question here is how old a reading is, which is arithmetic on response
-headers.
+Nothing is guessed: the age of a reading is arithmetic on the headers it came with.
 
 ---
 
