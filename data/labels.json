@@ -1,0 +1,49 @@
+{
+  "us": {
+    "Active": "active",
+    "Restricted": "restricted",
+    "Under Review": "pending",
+    "Suppressed": "suppressed"
+  },
+  "uk": {
+    "Active": "active",
+    "Restricted": "restricted",
+    "Under Review": "pending",
+    "Suppressed": "suppressed"
+  },
+  "de": {
+    "Aktiv": "active",
+    "Eingeschränkt": "restricted",
+    "In Prüfung": "pending",
+    "Ausgeblendet": "suppressed"
+  },
+  "fr": {
+    "Actif": "active",
+    "Restreint": "restricted",
+    "En cours d'examen": "pending",
+    "Masqué": "suppressed"
+  },
+  "jp": {
+    "有効": "active",
+    "制限あり": "restricted",
+    "審査中": "pending",
+    "非表示": "suppressed"
+  },
+  "es": {
+    "Activo": "active",
+    "Restringido": "restricted",
+    "En revisión": "pending",
+    "Oculto": "suppressed"
+  },
+  "ca": {
+    "Active": "active",
+    "Restricted": "restricted",
+    "Under Review": "restricted",
+    "Suppressed": "suppressed"
+  },
+  "au": {
+    "Active": "active",
+    "Restricted": "restricted",
+    "Under Review": "pending"
+  }
+}

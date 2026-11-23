@@ -1,0 +1,49 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: check-merge-conflict
+
+  - repo: local
+    hooks:
+      # Every known change instant must name a listing that actually has readings, and must fall
+      # inside the observed range. An orphan there would make every containment figure quietly wrong.
+      - id: corpus-is-consistent
+        name: every known change names a listing that exists
+        entry: >
+          python -c "import sys; sys.path.insert(0, 'src');
+          from pathlib import Path;
+          from status_checker.labels import LabelMap;
+          from status_checker.sources import load_readings, load_truth;
+          from status_checker.attribute import group_readings;
+          labels, lp = LabelMap.from_file(Path('data/labels.json'));
+          readings, rp = load_readings(Path('data/readings.jsonl'), labels);
+          truth, tp = load_truth(Path('data/truth.jsonl'));
+          assert not lp, lp;
+          assert not tp, tp;
+          assert len(rp) == 1, f'expected exactly 1 planted bad row, got {len(rp)}';
+          groups = group_readings(readings);
+          orphans = [(t.marketplace, t.listing_id) for t in truth if (t.marketplace, t.listing_id) not in groups];
+          assert not orphans, f'known changes name listings with no readings: {orphans}';
+          outside = [(t.marketplace, t.listing_id, t.at.isoformat()) for t in truth
+                     if t.at < min(r.observed_at for r in groups[(t.marketplace, t.listing_id)])
+                     or t.at > max(r.observed_at for r in groups[(t.marketplace, t.listing_id)])];
+          assert not outside, f'known changes outside the observed range: {outside}';
+          print(f'{len(readings)} readings, {len(truth)} known changes, {len(groups)} listings, consistent')"
+        language: system
+        pass_filenames: false
+        files: ^data/

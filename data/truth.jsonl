@@ -1,0 +1,17 @@
+{"marketplace": "us", "listing_id": "clean", "at": "2026-03-01T17:20:00+00:00", "from_status": "active", "to_status": "restricted"}
+{"marketplace": "us", "listing_id": "clean", "at": "2026-03-03T05:05:00+00:00", "from_status": "restricted", "to_status": "active"}
+{"marketplace": "de", "listing_id": "clean", "at": "2026-03-01T17:20:00+00:00", "from_status": "active", "to_status": "restricted"}
+{"marketplace": "de", "listing_id": "clean", "at": "2026-03-03T05:05:00+00:00", "from_status": "restricted", "to_status": "active"}
+{"marketplace": "jp", "listing_id": "clean", "at": "2026-03-01T17:20:00+00:00", "from_status": "active", "to_status": "restricted"}
+{"marketplace": "jp", "listing_id": "clean", "at": "2026-03-03T05:05:00+00:00", "from_status": "restricted", "to_status": "active"}
+{"marketplace": "uk", "listing_id": "stale-cdn", "at": "2026-03-02T01:40:00+00:00", "from_status": "active", "to_status": "pending"}
+{"marketplace": "uk", "listing_id": "stale-cdn", "at": "2026-03-03T13:10:00+00:00", "from_status": "pending", "to_status": "restricted"}
+{"marketplace": "fr", "listing_id": "stale-cdn", "at": "2026-03-02T01:40:00+00:00", "from_status": "active", "to_status": "pending"}
+{"marketplace": "fr", "listing_id": "stale-cdn", "at": "2026-03-03T13:10:00+00:00", "from_status": "pending", "to_status": "restricted"}
+{"marketplace": "es", "listing_id": "inverted", "at": "2026-03-01T08:00:00+00:00", "from_status": "active", "to_status": "restricted"}
+{"marketplace": "de", "listing_id": "undated", "at": "2026-03-02T09:25:00+00:00", "from_status": "active", "to_status": "restricted"}
+{"marketplace": "au", "listing_id": "undated", "at": "2026-03-02T09:25:00+00:00", "from_status": "active", "to_status": "restricted"}
+{"marketplace": "us", "listing_id": "echoed", "at": "2026-03-02T06:00:00+00:00", "from_status": "active", "to_status": "suppressed"}
+{"marketplace": "de", "listing_id": "reworded", "at": "2026-03-02T21:00:00+00:00", "from_status": "active", "to_status": "restricted"}
+{"marketplace": "jp", "listing_id": "widechars", "at": "2026-03-01T21:00:00+00:00", "from_status": "active", "to_status": "restricted"}
+{"marketplace": "fr", "listing_id": "overlapping", "at": "2026-03-01T12:00:00+00:00", "from_status": "active", "to_status": "pending"}

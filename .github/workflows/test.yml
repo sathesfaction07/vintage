@@ -1,0 +1,261 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check src tests data
+
+      - name: Test
+        run: pytest -q --cov=status_checker --cov-report=term-missing
+
+      - name: Doctor runs with no credentials and no network
+        run: status-checker doctor
+
+      - name: A missing Age header is UNDATED, not fresh
+        run: |
+          python - <<'PY'
+          from datetime import UTC, datetime, timedelta
+          from status_checker.freshness import age_from_headers
+          now = datetime(2026, 3, 1, 12, 0, tzinfo=UTC)
+
+          # The case the whole project turns on.
+          provenance, age = age_from_headers(observed_at=now)
+          assert provenance.value == "undated", provenance
+          assert age.max_seconds is None
+
+          # A cache that ignored its own lifetime forfeits the upper bound.
+          _, over = age_from_headers(observed_at=now, age_header=9000, cache_control="max-age=7200")
+          assert over.max_seconds is None, over
+
+          # s-maxage takes precedence for shared caches.
+          _, shared = age_from_headers(
+              observed_at=now, age_header=10, cache_control="max-age=99999, s-maxage=60"
+          )
+          assert shared.max_seconds == 60.0, shared
+
+          # A Date in the future is clock skew, not a negative age.
+          _, skewed = age_from_headers(observed_at=now, date_header=now + timedelta(hours=5))
+          assert skewed.min_seconds == 0.0, skewed
+
+          # no-store and max-age=0 are both direct responses.
+          for directive in ("no-store", "no-cache", "max-age=0"):
+              prov, bound = age_from_headers(observed_at=now, cache_control=directive)
+              assert prov.value == "origin", (directive, prov)
+              assert bound.is_exact and bound.min_seconds == 0.0
+          print("age bounds hold")
+          PY
+
+      - name: A later request can describe an EARLIER origin state
+        run: |
+          python - <<'PY'
+          from datetime import UTC, datetime, timedelta
+          from status_checker.attribute import changes, classify_ordering, inversions, naive_changes
+          from status_checker.models import AgeBound, Provenance, Reading, Status
+
+          base = datetime(2026, 3, 1, 0, 0, tzinfo=UTC)
+
+          def read(minutes, status, lo=0, hi=0, gen=None):
+              return Reading(
+                  marketplace="es", listing_id="L", raw_label=status.value, status=status,
+                  observed_at=base + timedelta(minutes=minutes),
+                  provenance=Provenance.CACHED if lo else Provenance.ORIGIN,
+                  age=AgeBound(min_seconds=lo, max_seconds=hi), generation=gen,
+              )
+
+          # Truth: ONE transition, active -> restricted at 08:00.
+          stream = [
+              read(240, Status.ACTIVE, gen="a"),                        # 04:00 fresh
+              read(490, Status.RESTRICTED, gen="b"),                    # 08:10 fresh
+              read(520, Status.ACTIVE, 10800, 14400, gen="c"),          # 08:40, 3-4h stale
+          ]
+          assert classify_ordering(stream[1], stream[2]).value == "reversed"
+          assert stream[2].window.precedes(stream[1].window)
+
+          # Naive invents a phantom flap the listing never had.
+          assert len(naive_changes(stream)) == 2
+          # Interval recovers the single real transition, in the right direction.
+          found = changes(stream)
+          assert len(found) == 1, found
+          assert (found[0].from_status, found[0].to_status) == (Status.ACTIVE, Status.RESTRICTED)
+          assert found[0].contains(base + timedelta(hours=8))
+          assert len(inversions(stream)) == 1
+
+          # And inversions are scoped per listing: two DIFFERENT listings cannot be inverted.
+          cross = [
+              read(0, Status.ACTIVE, gen="x"),
+              Reading(
+                  marketplace="es", listing_id="OTHER", raw_label="a", status=Status.RESTRICTED,
+                  observed_at=base + timedelta(minutes=30), provenance=Provenance.CACHED,
+                  age=AgeBound(min_seconds=10800, max_seconds=14400), generation="y",
+              ),
+          ]
+          assert inversions(cross) == []
+          print("the inversion and the phantom flap hold")
+          PY
+
+      - name: Naive attribution is late in ONE direction, never early
+        run: |
+          python - <<'PY'
+          from datetime import UTC, datetime, timedelta
+          from status_checker.attribute import changes
+          from status_checker.models import AgeBound, Provenance, Reading, Status
+
+          base = datetime(2026, 3, 1, 0, 0, tzinfo=UTC)
+
+          def read(hours, status, lo, hi, gen):
+              return Reading(
+                  marketplace="de", listing_id="L", raw_label=status.value, status=status,
+                  observed_at=base + timedelta(hours=hours),
+                  provenance=Provenance.CACHED if lo else Provenance.ORIGIN,
+                  age=AgeBound(min_seconds=lo, max_seconds=hi), generation=gen,
+              )
+
+          for age in (0, 60, 3600, 21600, 86400):
+              found = changes([
+                  read(0, Status.ACTIVE, 0, 0, "a"),
+                  read(48, Status.RESTRICTED, age, age + 600, "b"),
+              ])[0]
+              assert found.naive_lateness >= timedelta(0), (age, found.naive_lateness)
+              assert found.naive_lateness.total_seconds() == age
+          print("lateness is one-sided, so it is a bias rather than noise")
+          PY
+
+      - name: Requests are not observations
+        run: |
+          python - <<'PY'
+          from datetime import UTC, datetime, timedelta
+          from status_checker.attribute import collapse_echoes, observation_count
+          from status_checker.models import AgeBound, Provenance, Reading, Status
+
+          base = datetime(2026, 3, 1, 0, 0, tzinfo=UTC)
+          shared = [
+              Reading(
+                  marketplace="us", listing_id="L", raw_label="Active", status=Status.ACTIVE,
+                  observed_at=base + timedelta(minutes=20 * step), provenance=Provenance.CACHED,
+                  age=AgeBound(min_seconds=60, max_seconds=21600), generation="one-entry",
+              )
+              for step in range(9)
+          ]
+          count = observation_count(shared)
+          assert count.requests == 9 and count.distinct_generations == 1 and count.echoes == 8
+          assert len(collapse_echoes(shared)) == 1
+
+          # Readings with no identifier are NEVER collapsed: absence of an id is not shared identity.
+          anonymous = [
+              Reading(
+                  marketplace="us", listing_id="L", raw_label="Active", status=Status.ACTIVE,
+                  observed_at=base + timedelta(hours=step), provenance=Provenance.UNDATED,
+                  age=AgeBound.unbounded(), generation=None,
+              )
+              for step in range(3)
+          ]
+          assert len(collapse_echoes(anonymous)) == 3
+          print("9 requests, 1 observation")
+          PY
+
+      - name: NFKC and casefold are each load-bearing
+        run: |
+          python - <<'PY'
+          from status_checker.labels import normalise
+          assert normalise("ＡＣＴＩＶＥ") == normalise("active")   # fullwidth needs NFKC
+          assert normalise("STRASSE") == normalise("straße")      # sharp s needs casefold
+          assert "straße".lower() == "straße"                     # lower() alone does not
+          assert normalise("Under\u00a0Review") == "under review"  # non-breaking space
+          print("both normalisation steps are required")
+          PY
+
+      - name: The shipped corpus produces the documented figures
+        run: |
+          status-checker audit -o /tmp/out || true
+          python - <<'PY'
+          import json
+          payload = json.load(open("/tmp/out/audit.json"))
+          interval = payload["strategies"]["interval"]
+          naive = payload["strategies"]["naive"]
+
+          # Interval attribution contains every true instant and invents nothing.
+          assert interval["containment_rate"] == 1.0, interval["containment_rate"]
+          assert interval["bounded_containment_rate"] == 1.0
+          assert interval["spurious"] == 0
+          assert interval["missed"] == 0
+          assert interval["mean_lateness_hours"] is None
+
+          # Naive is late on all 17 and early on none -- the bias.
+          assert naive["late_count"] == 17, naive["late_count"]
+          assert naive["early_count"] == 0
+          assert naive["spurious"] == 2, naive["spurious"]
+          assert naive["mean_lateness_hours"] > 2.0
+
+          # An unbounded lower bound is null, never a date and never a zero.
+          unbounded = [c for c in payload["changes"] if c["after"] is None]
+          assert len(unbounded) == 2, len(unbounded)
+          assert all(c["width_hours"] is None for c in unbounded)
+
+          budget = payload["width_budget"]
+          assert budget["mean_width_hours"] >= budget["poll_interval_hours"]
+          assert 0.0 < budget["staleness_share"] < 0.5
+          print(f"interval {interval['containment_rate']:.0%}, naive spurious {naive['spurious']}, "
+                f"staleness share {budget['staleness_share']:.1%}")
+          PY
+
+      - name: check gates on a label conflict but reports staleness as a finding
+        run: |
+          ! status-checker check
+          status-checker check | grep -q '1 label conflict(s)'
+          status-checker check | grep -q 'under review'
+          status-checker check | grep -q 'PROVABLY staler'
+          status-checker check | grep -q 'provably stale and not provably fresh either'
+          status-checker check | grep -q 'would let the mapping rot undetected'
+          status-checker check | grep -q 'makes a reported status arbitrary'
+          echo "gated on the conflict, reported the staleness and the drift"
+
+      - name: audit passes even though the naive baseline is bad
+        run: |
+          status-checker audit
+          status-checker audit | grep -q 'invented 2 transition(s) that never happened'
+          status-checker audit | grep -q 'it IS the finding'
+          status-checker audit | grep -q 'exact equality'
+          echo "the gate is not unconditional"
+
+      - name: changes reports the single inversion
+        run: |
+          status-checker changes | grep -q '1 request pair(s) INVERTED'
+          status-checker changes | grep -q 'es/inverted'
+          status-checker changes | grep -q 'infrastructure fact'
+          echo "one inversion, correctly scoped"
+
+      - name: the SQLite schema carries bounds rather than an instant
+        run: |
+          status-checker record | grep -q 'age_max NULL -- unbounded, not zero'
+          status-checker record | grep -q 'after NULL -- detectable, not locatable'
+          status-checker record | grep -q 'not `changed_at`'
+          echo "schema verified"
+
+      - name: explain shows windows, echoes and excluded unknown labels
+        run: |
+          status-checker explain es inverted | grep -q 'describes \['
+          status-checker explain us echoed | grep -q '216 request(s) -> 12 distinct origin generation(s)'
+          status-checker explain de reworded | grep -q 'manufacture two phantom status changes'
+          status-checker explain de undated | grep -q -- '-inf'
+          ! status-checker explain zz nothing
+          echo "explain works"

@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+.env
+output/
+out/
+
+# Generated at runtime by `status-checker record`.
+data/history.db
+*.db-journal
+
+.DS_Store
+.idea/
+.vscode/
