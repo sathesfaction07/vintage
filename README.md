@@ -108,7 +108,7 @@ Both ends of a state span are intervals, so the duration is one too. "Restricted
 "restricted for 0 to 12 hours", which is less satisfying and is what the evidence supports. The naive
 single number is printed beside it.
 
-Meridian in this portfolio does `total += span.duration` — exact point subtraction. Right
+Meridian, a sibling project, does `total += span.duration` — exact point subtraction. Right
 there, where events arrive from a feed with authoritative timestamps. Wrong here, where every
 timestamp is an observation.
 
@@ -130,7 +130,7 @@ width would imply all of it is a caching problem. Polling harder is the only lev
 
 ## The Schema Is the Argument
 
-The brief asks for *"SQLite — show when status changed"*. The obvious schema is
+The project brief asks for *"SQLite — show when status changed"*. The obvious schema is
 
 ```sql
 CREATE TABLE status_history (listing_id TEXT, status TEXT, changed_at TIMESTAMP)
@@ -222,10 +222,10 @@ above.
 
 ## Tradeoffs and Decisions
 
-**No vision-model fallback on unrecognised labels, despite the brief asking.** An unknown label is
+**No vision-model fallback on unrecognised labels, despite the project brief asking.** An unknown label is
 *evidence the platform changed its wording*, which is the thing to fix in the config. Resolving it
 silently answers the immediate question and destroys the signal, after which the mapping rots
-undetected. Also: Twinlane in this portfolio already has `core/vlm_fallback.py`, so building it
+undetected. Also: Twinlane, a sibling project, already has `core/vlm_fallback.py`, so building it
 again would be a duplicate rather than a capability.
 
 **An unknown label is excluded from attribution.** A transition into `UNKNOWN` is a fact about our
@@ -233,8 +233,8 @@ config, and in the output it would be indistinguishable from a real status movem
 would manufacture two phantom changes around every wording change — the corpus's reworded listing
 yields **one** change, not three.
 
-**No FastAPI + htmx UI, despite the brief asking.** Vigil already carries FastAPI, and this
-portfolio has a logged gap for untested UI JavaScript. A text table asserts in CI; a page does not.
+**No FastAPI + htmx UI, despite the project brief asking.** Vigil already carries FastAPI, and UI
+JavaScript is the one thing CI cannot assert on. A text table asserts in CI; a page does not.
 
 **NFKC and casefold are both applied, and this is a repeat.** Kinship reached the same conclusion
 for merchant names. Cited as a repeat rather than presented as a discovery — but kept, because a

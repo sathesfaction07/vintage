@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-The brief asks for history: *"historical status tracking (SQLite — show when status changed)."* The
+The project brief asks for history: *"historical status tracking (SQLite — show when status changed)."* The
 obvious schema is
 
 ```sql
@@ -115,7 +115,7 @@ supports. The naive single number is printed alongside for comparison.
 `min_duration` is clamped at zero. A negative bound means the evidence does not establish that the
 state persisted at all, so the honest floor is zero rather than a negative duration.
 
-Meridian in this portfolio computes `time_in_state` as `total += span.duration` — exact point
+Meridian, a sibling project, computes `time_in_state` as `total += span.duration` — exact point
 subtraction. That is the right choice there, where events arrive from a feed with authoritative
 timestamps. It is the wrong choice here, where every timestamp is an observation.
 

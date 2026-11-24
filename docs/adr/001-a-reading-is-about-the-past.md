@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-The brief names its own worst input:
+The project brief names its own worst input:
 
 > *"Platform returns stale cached status, status field renamed in UI update, marketplace-specific
 > status labels."*
@@ -90,7 +90,7 @@ fails the run.
 
 ### An unknown label is reported, not resolved
 
-The brief asks for a vision-model fallback on unrecognised status text. **Not built, and the reason
+The project brief asks for a vision-model fallback on unrecognised status text. **Not built, and the reason
 is not cost.** An unrecognised label is *evidence that the platform changed its wording*, which is
 the thing the operator needs to fix in the config. Resolving it silently answers the immediate
 question and destroys the signal, after which the mapping rots undetected and nothing says so.
